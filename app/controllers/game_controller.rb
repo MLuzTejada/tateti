@@ -1,6 +1,7 @@
 class GameController < ApplicationController
-
+    before_action :get_player_by_id, only:[:new_game, :join_game, :make_move]
     before_action :check_token
+
 
     WINNING_POSITIONS = [
         [0,1,2],
@@ -15,27 +16,25 @@ class GameController < ApplicationController
 
     def new_game
         @board = Board.new()
-        @player1 = Player.find_by(id: params[:params][:id])
-        @player1.color = "#EC7063"
-        @player1.piece = "X"
-        @board.players << @player1
-        if (@board.save && @player1.save)
+        @player.color = "#EC7063"
+        @player.piece = "X"
+        @board.players << @player
+        if (@board.save && @player.save)
             render status: 200, json: { message: "Se creo la partida exitosamente", board: @board, players: @board.players }
         else
-            render status: 500, json: { message: "Hubo un error creando la partida", error: @board.errors.details }
+            render status: 500, json: { message: "Hubo un error creando la partida", error: @board.errors }
         end
     end
 
     def join_game
-        @board = Board.find_by(token: params[:params][:token])
+        @board = Board.find_by(token: params[:token])
         if @board.players.length == 2
             render status: 500, json: { message: "Ya hay dos jugadores en esta partida", board: @board, players: @board.players } and return
         end
-        @player2 = Player.find_by(id: params[:params][:id])
-        @player2.color = "#5DADE2"
-        @player2.piece = "O"
-        @board.players << @player2
-        if (@board.save && @player2.save)
+        @player.color = "#5DADE2"
+        @player.piece = "O"
+        @board.players << @player
+        if (@board.save && @player.save)
             render status: 200, json: { message: "Se unio al juego satisfactoriamente", board: @board, players: @board.players }
         else
             render status: 500, json: { message: "Hubo un error uniendolo al juego", error: @board.errors.details }
@@ -63,7 +62,7 @@ class GameController < ApplicationController
             if @board.save
                 render status: 200, json: { message: "Su movimiento se realizo con exito", board: @board }
             else
-                render status: 500, json: { message: "Hubo un error haciendo el movimiento", error: @board.errors.details }
+                render status: 500, json: { message: "Hubo un error haciendo el movimiento", error: @board.errors }
             end
         else
             render status: 500, json: { message: "Movimiento invalido", board: @board }
@@ -109,7 +108,12 @@ class GameController < ApplicationController
 
         def check_token
             return if request.headers["Authorization"] == @player.token
-            render json: { message: "Player unauthorize" }, status: 401
+            render json: { message: "Jugador no autorizado" }, status: 401
             false
+        end
+
+        def get_player_by_id
+            puts("player", params[:id])
+            @player = Player.find_by(id: params[:id])
         end
 end

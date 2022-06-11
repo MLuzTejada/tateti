@@ -1,6 +1,7 @@
 class PlayerController < ApplicationController
     before_action :set_player_by_name_password, only:[:login]
-    # before_action :check_token, only:[:show]
+    before_action :set_player_by_id, only:[:logout, :show]
+    before_action :check_token, only:[:logout, :show]
 
     def register
         @player = Player.new(player_params)
@@ -12,25 +13,26 @@ class PlayerController < ApplicationController
     end
 
     def login
-        # session[:player_id] = @player.id
-        # puts("session login: ", session[:player_id])
         if !@player.nil?
-            puts("player: ", @player)
+            session[:player_id] = @player.id
             render json: @player, status: 200
         else
-            render json: @player.errors, status: 404
+            render json: { message: "Jugador no encontrado" }, status: 404
         end
     end
 
     def logout
-        session[:player_id] = nil #ver como hacer esto
-        render json: {message: "Cerro sesion satisfactoriamente"}, status: 200
+        session[:player_id] = nil
+        render json: { message: "Cerro sesion satisfactoriamente" }, status: 200
     end
 
     # GET /players/1
     def show
-        @player = Player.find(params[:id])
-        render json: @player
+        if !@player.nil?
+            render json: @player
+        else
+            render json: { message: "Jugador no encontrado" }, status: 404
+        end
     end
 
     private
@@ -40,6 +42,10 @@ class PlayerController < ApplicationController
 
         def player_params
             params.require(:player).permit(:name, :password)
+        end
+
+        def set_player_by_id
+            @player = Player.find(params[:id]) 
         end
 
         def check_token

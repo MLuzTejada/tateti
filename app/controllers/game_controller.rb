@@ -1,5 +1,7 @@
 class GameController < ApplicationController
 
+    before_action :check_token
+
     WINNING_POSITIONS = [
         [0,1,2],
         [3,4,5],
@@ -95,11 +97,19 @@ class GameController < ApplicationController
         false
     end
 
-    def player_params
-        params.require(:params).permit(:name)
-    end
 
-    def move_params
-        params.require(:params).permit(:player, :move, :game_piece)
-    end
+    private
+        def player_params
+            params.require(:params).permit(:name)
+        end
+
+        def move_params
+            params.require(:params).permit(:player, :move, :game_piece)
+        end
+
+        def check_token
+            return if request.headers["Authorization"] == @player.token
+            render json: { message: "Player unauthorize" }, status: 401
+            false
+        end
 end

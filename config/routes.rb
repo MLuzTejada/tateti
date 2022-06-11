@@ -13,7 +13,7 @@ Rails.application.routes.draw do
 
   post 'login', to: 'player#login'
   post 'register', to: 'player#register'
-  get 'logout', to: 'player#logout'
+  get 'logout/:id', to: 'player#logout'
   get 'players/:id', to: 'player#show'
  
 end

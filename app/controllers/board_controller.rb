@@ -1,7 +1,7 @@
 class BoardController < ApplicationController
-    before_action :set_board_by_id
+    before_action :set_board_by_player_id
 
-     # GET /boards/1 
+    # GET /boards/1 
     def show
         if @board.nil?
             render json: @board.errors, status: 404
@@ -10,7 +10,7 @@ class BoardController < ApplicationController
     end
 
     private
-        def set_board_by_id
-            @board = Board.find(params[:id])
+        def set_board_by_player_id
+            @board = Player.find(params[:id]).boards.last
         end
 end

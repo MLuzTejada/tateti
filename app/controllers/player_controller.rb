@@ -1,8 +1,9 @@
 class PlayerController < ApplicationController
     before_action :set_player_by_name_password, only:[:login]
     before_action :set_player_by_id, only:[:logout, :show]
-    before_action :check_token, only:[:logout, :show]
+    before_action :check_token, only:[:logout]
 
+    # POST /register
     def register
         @player = Player.new(player_params)
         if @player.save
@@ -12,17 +13,19 @@ class PlayerController < ApplicationController
         end
     end
 
+    # POST /login
     def login
         if !@player.nil?
-            session[:player_id] = @player.id
+            cookies[:player_id] = @player.id
             render json: @player, status: 200
         else
             render json: { message: "Jugador no encontrado" }, status: 404
         end
     end
 
+    # GET /logout/3
     def logout
-        session[:player_id] = nil
+        cookies[:player_id] = nil
         render json: { message: "Cerro sesion satisfactoriamente" }, status: 200
     end
 

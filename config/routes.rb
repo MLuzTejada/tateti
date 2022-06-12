@@ -8,7 +8,7 @@ Rails.application.routes.draw do
 
   post 'new_game', to: 'game#new_game'
   post 'join_game', to: 'game#join_game'
-  post 'other_round/:token', to: 'game#other_round'
+  post 'other_round', to: 'game#other_round'
   post 'make_move', to: 'game#make_move'
 
   post 'login', to: 'player#login'

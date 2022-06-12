@@ -1,7 +1,6 @@
 class GameController < ApplicationController
-    before_action :get_player_by_id, only:[:new_game, :join_game, :make_move]
+    before_action :get_player_by_id, only:[:new_game, :join_game, :make_move, :other_round]
     before_action :check_token
-
 
     WINNING_POSITIONS = [
         [0,1,2],
@@ -14,6 +13,7 @@ class GameController < ApplicationController
         [6,4,2]
     ]
 
+    # POST /new_game 
     def new_game
         @board = Board.new()
         @player.color = "#EC7063"
@@ -22,10 +22,11 @@ class GameController < ApplicationController
         if (@board.save && @player.save)
             render status: 200, json: { message: "Se creo la partida exitosamente", board: @board, players: @board.players }
         else
-            render status: 500, json: { message: "Hubo un error creando la partida", error: @board.errors }
+            render status: 500, json: { message: "Hubo un error creando la partida", error: @board.errors || @player.errors }
         end
     end
 
+    # POST /join_game
     def join_game
         @board = Board.find_by(token: params[:token])
         if @board.players.length == 2
@@ -37,27 +38,28 @@ class GameController < ApplicationController
         if (@board.save && @player.save)
             render status: 200, json: { message: "Se unio al juego satisfactoriamente", board: @board, players: @board.players }
         else
-            render status: 500, json: { message: "Hubo un error uniendolo al juego", error: @board.errors.details }
+            render status: 500, json: { message: "Hubo un error uniendolo al juego", error: @board.errors || @player.errors }
         end
     end
 
     def other_round
-        @board = Board.find_by(token: params[:params][:token])
+        @board = Board.find_by(token: params[:token])
         @new_board = Board.new()
+        @new_board.turn = "X"
         @new_board.players << @board.players
         if @new_board.save
             render status: 200, json: { message: "Se creo otra ronda satisfactoriamente", board: @new_board, players: @new_board.players }
         else
-            render status: 500, json: { message: "Hubo un error creando otra ronda", error: @new_board.errors.details }
+            render status: 500, json: { message: "Hubo un error creando otra ronda", error: @new_board.errors }
         end  
     end
 
+    # POST /make_move
     def make_move
         @board = Board.find_by(token: params[:token])
-        @player = @board.players.find_by(piece: @board.turn)
-        if @board.squares[params[:game][:move]].nil?
-            @board.squares[params[:game][:move]] = params[:game][:game_piece]
-            @board.colors[params[:game][:move]] = @player.color
+        if @board.squares[params[:move]].nil?
+            @board.squares[params[:move]] = params[:game_piece]
+            @board.colors[params[:move]] = @player.color
             return if check_winner(@board, @player)
             if @board.save
                 render status: 200, json: { message: "Su movimiento se realizo con exito", board: @board }
@@ -73,7 +75,9 @@ class GameController < ApplicationController
         WINNING_POSITIONS.each do |a,b,c|
             if(board.squares[a] && board.squares[a] == board.squares[b] && board.squares[a] == board.squares[c])
                 board.turn = nil
-                player.score =+ 1
+                puts("player score: ", player.score)
+                player.score += 1
+                puts("player score: ", player.score)
                 board.winner = player.id
                 if (board.save && @player.save)
                     render status: 200, json: { message: "El jugador #{player.name} gano!", board: board }
@@ -98,14 +102,6 @@ class GameController < ApplicationController
 
 
     private
-        def player_params
-            params.require(:params).permit(:name)
-        end
-
-        def move_params
-            params.require(:params).permit(:player, :move, :game_piece)
-        end
-
         def check_token
             return if request.headers["Authorization"] == @player.token
             render json: { message: "Jugador no autorizado" }, status: 401
@@ -113,7 +109,6 @@ class GameController < ApplicationController
         end
 
         def get_player_by_id
-            puts("player", params[:id])
             @player = Player.find_by(id: params[:id])
         end
 end

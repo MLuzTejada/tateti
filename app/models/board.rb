@@ -10,6 +10,6 @@ class Board < ApplicationRecord
 
 
     def set_token
-        self.token = SecureRandom.uuid
+        self.token = SecureRandom.hex(10)
     end
 end

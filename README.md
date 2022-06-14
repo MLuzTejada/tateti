@@ -2,7 +2,6 @@
 # Ta Te Ti - backend :x: :o:
 Api for the classic game "TA TE TI".
 
-
 ## Run Locally
 
 Clone the project
@@ -28,6 +27,30 @@ Start the server
 ```bash
   rails s -b 'ssl://localhost:3000?key=localhost.key&cert=localhost.crt'
 ```
+
+
+## Troubleshooting
+
+#### Error with certificate
+
+Start the server
+
+```bash
+  rails s -b 'ssl://localhost:3000?key=localhost.key&cert=localhost.crt'
+```
+
+Go to
+
+```bash
+  https://localhost:3000/
+```
+
+type
+
+```bash
+  thisisunsafe
+```
+
 
 
 ## API Reference
@@ -580,17 +603,84 @@ m6TwlWprYSeEJClIWGa9Iacn8AA9i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS
 ##### Request
 
 ```http
-  GET /other_round
+  POST /other_round
 ```
 
 | Headers | Type     | Description                |
 | :-------- | :------- | :------------------------- |
 | `Authorization` | `string` | **Required**. Your API token |
 
+| Body | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `token` | `string` | **Required**. Token of the board where are playing|
+| `id` | `integer` | **Required**. Id of the player who start other round|
+
 ##### Request example
+```
+curl --location --request POST 'https://localhost:3000/other_round' \
+--header 'Authorization: 27d5f2f8-7b3d-4d6d-9e88-e07f1edf26ae' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: _tateti_backend_session=FBpAG7d8L%2BYWCJ5pdNzBmd
+igXjq8MM%2Fae4A1kFvH%2Fv7NFDjWLMml7IQixHtosyb8DR0lj%2BSYDbBmZPWL9p
+HRWd9Wy59cMR9Jg2HdECaCfQex%2ByXG5LaDvhHoFHKaapXJdLDNeUCoB%2BP2bM1m6T
+wlWprYSeEJClIWGa9Iacn8AA9i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS%2B3A--
+EZmfcNfM46X6giT4wT8gOw%3D%3D; player_id=3' \
+--data-raw '{
+    "id":"3",
+    "token": "052bb6485660fc2d8596"
+}'
+```
+
+##### Sucess Response
+```
+{
+    "message": "Se creo otra ronda satisfactoriamente",
+    "board": {
+        "id": 4075,
+        "token": "4478375853424fc7bb89",
+        "turn": "X",
+        "winner": null,
+        "squares": [],
+        "colors": [],
+        "tie": false,
+        "created_at": "2022-06-13T20:09:21.074Z",
+        "updated_at": "2022-06-13T20:09:21.074Z"
+    },
+    "players": [
+        {
+            "id": 3,
+            "name": "Pepe",
+            "password": "pepehonguito19",
+            "token": "27d5f2f8-7b3d-4d6d-9e88-e07f1edf26ae",
+            "score": 0,
+            "color": "#EC7063",
+            "piece": "X",
+            "created_at": "2022-06-11T14:41:51.703Z",
+            "updated_at": "2022-06-11T22:37:19.271Z"
+        }
+    ]
+}
+```
+
+##### Error Response
+```
+    {
+    "message": "Huubo un error creando otra ronda"
+},
+{
+    error: {
+        errors
+    }
+}
+  ```
+```
+  {
+  "message": "Jugador no autorizado"
+}
+```
 
 
-#### Get a board by id
+#### Get a board by player id
 ##### Request
 
 ```http
@@ -599,17 +689,16 @@ m6TwlWprYSeEJClIWGa9Iacn8AA9i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `api_key` | `string` | **Required**. Your API key |
-| `id` | `string` | **Required**. Id of the player you want to find |
+| `id` | `string` | **Required**. Id of the player you want to find the board|
 
 ##### Request example
 ```
-curl --location --request GET 'https://localhost:3000/boards/1' \
+curl --location --request GET 'https://localhost:3000/boards/3' \
 --header 'Cookie: _tateti_backend_session=FBpAG7d8L%2BYWCJ5pdNzBmd
 igXjq8MM%2Fae4A1kFvH%2Fv7NFDjWLMml7IQixHtosyb8DR0lj%2BSYDbBmZPWL9p
-HRWd9Wy59cMR9Jg2HdECaCfQex%2ByXG5LaDvhHoFHKaapXJdLDNeUCoB%2BP2bM1m6
-TwlWprYSeEJClIWGa9Iacn8AA9i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS%2B
-3A--EZmfcNfM46X6giT4wT8gOw%3D%3D'
+HRWd9Wy59cMR9Jg2HdECaCfQex%2ByXG5LaDvhHoFHKaapXJdLDNeUCoB%2BP2bM1m6T
+wlWprYSeEJClIWGa9Iacn8AA9i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS%2B3A--
+EZmfcNfM46X6giT4wT8gOw%3D%3D; player_id=3'
 ```
 
 ##### Sucess Response
@@ -708,14 +797,15 @@ i4KXRG19zth2Oca2iJIk%3D--V1dBfKQE11YOS%2B3A--EZmfcNfM46X6giT4wT8gOw%3D%3D'
 
   ```
   {
-    "message": "Player unauthorize"
+    "message": "Jugador no autorizado"
   }
   ```
-
 
 
 ## Authors
 
 - [@MLuzTejada](https://github.com/MLuzTejada)
+
+
 
 

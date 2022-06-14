@@ -4,7 +4,7 @@ class BoardController < ApplicationController
     # GET /boards/1 
     def show
         if @board.nil?
-            render json: @board.errors, status: 404
+            render json: { message: "Tablero no encontrado" }, status: 404
         end
         render json: @board, status: 200
     end

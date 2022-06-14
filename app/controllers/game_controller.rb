@@ -18,6 +18,7 @@ class GameController < ApplicationController
         @board = Board.new()
         @player.color = "#EC7063"
         @player.piece = "X"
+        @player.score = 0
         @board.players << @player
         if (@board.save && @player.save)
             render status: 200, json: { message: "Se creo la partida exitosamente", board: @board, players: @board.players }
@@ -34,6 +35,7 @@ class GameController < ApplicationController
         end
         @player.color = "#5DADE2"
         @player.piece = "O"
+        @player.score = 0
         @board.players << @player
         if (@board.save && @player.save)
             render status: 200, json: { message: "Se unio al juego satisfactoriamente", board: @board, players: @board.players }
@@ -42,6 +44,7 @@ class GameController < ApplicationController
         end
     end
 
+    # POST /other_round
     def other_round
         @board = Board.find_by(token: params[:token])
         @new_board = Board.new()
@@ -75,9 +78,7 @@ class GameController < ApplicationController
         WINNING_POSITIONS.each do |a,b,c|
             if(board.squares[a] && board.squares[a] == board.squares[b] && board.squares[a] == board.squares[c])
                 board.turn = nil
-                puts("player score: ", player.score)
                 player.score += 1
-                puts("player score: ", player.score)
                 board.winner = player.id
                 if (board.save && @player.save)
                     render status: 200, json: { message: "El jugador #{player.name} gano!", board: board }

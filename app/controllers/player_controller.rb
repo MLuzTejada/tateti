@@ -53,7 +53,7 @@ class PlayerController < ApplicationController
 
         def check_token
             return if request.headers["Authorization"] == @player.token
-            render json: { message: "Player unauthorize" }, status: 401
+            render json: { message: "Jugador no autorizado" }, status: 401
             false
         end
 end
